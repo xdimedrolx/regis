@@ -32,13 +32,15 @@ class InspectPullRequest
         $inspection = $command->getInspection();
         $pullRequest = $command->getPullRequest();
 
+        $configuration = $command->getInspection()->getRepository()->getInspectionConfiguration();
+
         $inspection->start();
         $this->inspectionsRepo->save($inspection);
 
         $this->dispatch(Event::INSPECTION_STARTED, new Event\InspectionStarted($inspection, $pullRequest));
 
         try {
-            $report = $this->inspector->inspect($pullRequest->getRepository(), $pullRequest->getRevisions());
+            $report = $this->inspector->inspect($pullRequest->getRepository(), $pullRequest->getRevisions(), $configuration);
             $inspection->finish();
             $this->dispatch(Event::INSPECTION_FINISHED, new Event\InspectionFinished($inspection, $pullRequest, $report));
         } catch (\Exception $e) {

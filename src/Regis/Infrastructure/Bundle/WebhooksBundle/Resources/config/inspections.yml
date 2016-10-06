@@ -3,27 +3,36 @@ services:
         class: Regis\Application\Inspector
         arguments:
             - '@regis.vcs.git'
-            - [ '@regis.inspection.code_sniffer', '@regis.inspection.phpmd' ]
+            - [ '@regis.inspection.code_sniffer' ] #, '@regis.inspection.phpmd' ]
 
     regis.inspection.code_sniffer:
         class: Regis\Application\Inspection\CodeSniffer
         arguments: [ '@regis.tools.code_sniffer' ]
         public: false
 
-    regis.inspection.phpmd:
-        class: Regis\Application\Inspection\PhpMd
-        arguments: [ '@regis.tools.phpmd' ]
-        public: false
+#    regis.inspection.phpmd:
+#        class: Regis\Application\Inspection\PhpMd
+#        arguments: [ '@regis.tools.phpmd' ]
+#        public: false
 
     regis.tools.code_sniffer:
         class: Regis\Infrastructure\CodeSniffer\CodeSniffer
-        arguments: [ '%phpcs_binary%', '%regis.config.inspections.phpcs%' ]
+        arguments: [ '%phpcs_binary%', '@regis.tools.code_sniffer.config_dumper' ]
         public: false
 
-    regis.tools.phpmd:
-        class: Regis\Infrastructure\PhpMd\PhpMd
-        arguments: [ '%phpmd_binary%', '%regis.config.inspections.phpmd%' ]
+    regis.tools.code_sniffer.rules:
+        class: Regis\Application\Inspection\CodeSnifferRules
         public: false
+
+    regis.tools.code_sniffer.config_dumper:
+        class: Regis\Infrastructure\CodeSniffer\ConfigurationDumper
+        arguments: [ '@regis.tools.code_sniffer.rules' ]
+        public: false
+
+#    regis.tools.phpmd:
+#        class: Regis\Infrastructure\PhpMd\PhpMd
+#        arguments: [ '%phpmd_binary%', '%regis.config.inspections.phpmd%' ]
+#        public: false
 
     regis.violation_reporter.github:
         class: Regis\Application\Reporter\Github

@@ -18,12 +18,17 @@ class PhpMd implements Inspection
         $this->phpMd = $phpMd;
     }
 
+    public function getConfigurationFactory(): ConfigurationFactory
+    {
+        return null;
+    }
+
     public function getType(): string
     {
         return 'phpmd';
     }
 
-    public function inspectDiff(Model\Diff $diff): \Traversable
+    public function inspectDiff(Model\Diff $diff, array $config): \Traversable
     {
         /** @var Model\Diff\File $file */
         foreach ($diff->getAddedPhpFiles() as $file) {

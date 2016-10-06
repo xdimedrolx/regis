@@ -10,25 +10,31 @@ use Regis\Application\Inspection\CodeSnifferRunner;
 class CodeSniffer implements CodeSnifferRunner
 {
     private $phpcsBin;
-    private $codeSnifferConfig;
+    private $configurationDumper;
 
-    public function __construct(string $phpCsBin, array $codeSnifferConfig = [])
+    public function __construct(string $phpCsBin, ConfigurationDumper $configurationDumper)
     {
         $this->phpcsBin = $phpCsBin;
-        $this->codeSnifferConfig = $codeSnifferConfig;
+        $this->configurationDumper = $configurationDumper;
     }
 
-    public function execute(string $fileName, string $fileContent): array
+    public function execute(string $fileName, string $fileContent, array $config): array
     {
-        $process = new Process(sprintf(
-            '%s %s --report=json --stdin-path=%s',
-            escapeshellarg($this->phpcsBin),
-            implode(' ', $this->codeSnifferConfig['options']),
-            escapeshellarg($fileName)
-        ));
+        $configFile = $this->configurationDumper->dump($config);
 
-        $process->setInput($fileContent);
-        $process->run();
+        try {
+            $process = new Process(sprintf(
+                '%s --standard=%s --report=json --stdin-path=%s',
+                escapeshellarg($this->phpcsBin),
+                $configFile,
+                escapeshellarg($fileName)
+            ));
+
+            $process->setInput($fileContent);
+            $process->run();
+        } finally {
+            unlink($configFile);
+        }
 
         return json_decode($process->getOutput(), true);
     }

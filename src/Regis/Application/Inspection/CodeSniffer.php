@@ -18,16 +18,22 @@ class CodeSniffer implements Inspection
         $this->codeSniffer = $codeSniffer;
     }
 
+    public function getConfigurationFactory(): ConfigurationFactory
+    {
+        // TODO
+        return new CodeSnifferConfigurationFactory(new CodeSnifferRules());
+    }
+
     public function getType(): string
     {
         return 'phpcs';
     }
 
-    public function inspectDiff(Model\Diff $diff): \Traversable
+    public function inspectDiff(Model\Diff $diff, array $config): \Traversable
     {
         /** @var Model\Diff\File $file */
         foreach ($diff->getAddedPhpFiles() as $file) {
-            $report = $this->codeSniffer->execute($file->getNewName(), $file->getNewContent());
+            $report = $this->codeSniffer->execute($file->getNewName(), $file->getNewContent(), $config);
 
             foreach ($report['files'] as $fileReport) {
                 yield from $this->buildViolations($file, $fileReport);

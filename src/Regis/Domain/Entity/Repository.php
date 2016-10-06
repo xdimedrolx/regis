@@ -79,4 +79,9 @@ abstract class Repository
     {
         $this->isInspectionEnabled = true;
     }
+
+    public function getInspectionConfiguration()
+    {
+        return [];
+    }
 }
